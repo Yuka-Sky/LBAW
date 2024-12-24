@@ -1,0 +1,514 @@
+body{
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  color:#000;
+  line-height: 1.4;
+}
+
+h1, h3{
+  font-family: 'Lora';
+}
+
+h2{
+  font-size: 2em;
+  font-weight: 400;
+}
+
+a{
+  text-decoration: none;
+  color:#000;
+}
+
+main > nav.navbar{
+  background-color: #8c2d19;
+}
+
+.navbar-brand{ 
+  margin: 0;
+  font-size: 2.25em;
+  vertical-align: middle;
+  border-radius: 0.25rem;
+  color: #8c2d19;
+}
+
+span.badge-secondary {
+  border-width: 1px;
+  border-style: solid;
+  border-color: #000;
+  background-color: #ffffff;
+  color: #8c2d19;
+}
+
+span.badge-secondary:hover {
+  background-color: #8c2d19;
+  color: #fff;
+  border-color: #f5e8da;
+}
+
+.dropdown-menu {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.tag-name{
+  font-size:medium;
+}
+
+.unfollow-tag,
+.follow-tag {
+  font-size: 20px;
+  color: #8c2d19;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+}
+  
+.unfollow-tag:hover {
+  color: #672113;
+}
+  
+.follow-tag {
+  color: #8c2d19;
+}
+  
+.follow-tag:hover {
+  color: #672113;
+}
+
+
+section#content{
+  margin-top: 6em;
+}
+
+div.post{
+  border-top-color: #672113;
+  border-top-width: 1px;
+  border-top-style: groove;
+}
+
+.post-title > a{
+  color: #000;
+  font-family: 'Lora';
+  font-weight: 300;
+}
+
+.post-title{
+  color: #000;
+  font-family: 'Lora';
+  font-weight: 300;
+}
+
+.post-subtitle{
+  color: #672113;
+  font-family: 'Lora';
+  font-size: 1.5em;
+  font-weight: 300;
+}
+
+span.post-tags-badge{
+  padding: 1em;
+  background-color: #f5e8da;
+  font-size: small;
+}
+
+.container.post-feed, .container.post-page-all, .container.static, .container.notifications, .container.profile, .container.bans-page, .container.technical{
+  padding: 1em;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+}
+
+.container > form.form {
+  font-size: 1.2em;
+  margin: 0 auto;
+  padding: 1em;
+  max-width: 60em;
+  border: 1px solid #672113;
+  border-radius: 20px;
+}
+
+form.form > label{
+  font-size: 1.2em;
+}
+
+
+form.form > div > input, form.form > div > textarea {
+  font-size: 1.2em;
+}
+
+form.form > div > label{
+  font-size: 1.3em;
+}
+
+#content > form .error {
+  font-weight: bold;
+  color: #ff3333;
+}
+  
+#content > form .success {
+  font-weight: bold;
+  color: #106af1;
+}
+  
+#content > form input {
+  background-color: white;
+}
+input[type=text]:focus,
+input[type=email]:focus,
+input[type=password]:focus,
+input[type=datetime-local]:focus {
+  border-color: #672113;
+}
+input[type=text]:focus, input[type=email]:focus, input[type=password]:focus {
+  border-color: #672113;
+}
+
+h1.username{
+  font-size: 2em;
+}
+
+div.name-follow{
+  gap: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items:stretch;
+}
+
+.reputation{
+  width:fit-content;
+  padding: 0.6em;
+  color:#f5e8da;
+  background-color: #8c2d19;
+  border-radius: 30px;
+}
+
+a.button{
+  color: #fff;
+  background-color: #8c2d19;
+  border-color: #f5e8da;
+}
+
+button{
+  background-color: #8c2d19;
+  border-color: #f5e8da;
+}
+
+a.button.button-outline{
+  background-color: #ffffff;
+  border-color: #8c2d19;
+  color: #8c2d19;
+}
+
+div.account-edit{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+div.profile-follow{
+  display: flex;
+}
+
+.follow-users {
+  flex: 1; 
+  background-color:#f5e8da;
+  padding: 20px;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+
+.follow-tags {
+  flex: 1; 
+  background-color:#f5e8da; 
+  padding: 20px;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+div.post-author{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#delete-post{
+  margin-top: 0;
+  margin-bottom: auto;
+  font-size: 1.3em;
+}
+
+#edit-post{
+  padding-top: 5px;
+  padding-bottom: 40px;
+  margin-top: 0;
+  margin-bottom: auto;
+}
+
+fieldset#tags_select{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+
+.vote-btn, .vote-c-btn {
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border: 1px solid transparent;
+}
+
+.vote-btn.upvote, .vote-btn.downvote, .comment-vote-btn.upvote, .comment-vote-btn.downvote {
+  background-color: #ffffff;
+  font-size: 32px;
+  color: rgb(0, 0, 0);
+}
+
+.vote-btn.upvote.on, .comment-vote-btn.upvote.on {
+  color: #28a745;
+}
+
+.vote-btn.downvote.on, .comment-vote-btn.downvote.on {
+  color: #dc3545;
+}
+
+.vote-btn:hover, .comment-vote-btn:hover {
+  opacity: 0.7;
+}
+.vote-btn i {
+  pointer-events: none;
+}
+
+i.bi-hand-thumbs-up{
+  font-size: 1em;
+}
+
+a.post-comments{
+  color: #672113;
+}
+
+a.posts-user{
+  color: #672113;
+  font-size: 1.2em;
+}
+
+#tu {
+  font-weight: bold;
+}
+
+div.filters-menu{
+  .form-check {
+    margin-right: 1rem; 
+    display: flex;
+    align-items: center;
+  }
+  
+  .form-check-label {
+    margin-left: 0.5rem; 
+  }
+}
+
+.admin-buttons {
+  color: #fff;
+  background-color: #8c2d19;
+  border: none;
+  padding: 10px 20px;
+  font-size: 10px; 
+  border-radius: 12px; 
+  transition: all 0.3s ease;
+}
+
+.admin-buttons:hover {
+  background-color: #a33d26; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+}
+
+.btn-primary{
+  font-size:small;
+  background-color: #672113;
+  border-width: 0;
+}
+
+.btn-primary:hover{
+  background-color: #8c2d19;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #f5e8da;;
+}
+
+.comments-section{
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color:#672113;
+}
+
+.comment-item{
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color:#672113;
+}
+
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #4f5458; 
+  color: #ffffff;
+  padding: 10px 20px;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000; 
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1800px;
+  margin: 0 auto;
+}
+
+.footer-left, .footer-right {
+  font-size: 14px;
+}
+
+
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.col-md-6 {
+  border: 1px solid #000000;
+  padding: 10px;            
+  margin-bottom: 10px;      
+  border-radius: 5px;       
+  background-color: #f9f9f9; 
+  flex: 1;
+  margin-right: 20px;
+}
+
+#user_buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px; 
+  flex-wrap: wrap;            
+}
+
+.tag-item {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;    
+  width: 100%;        
+}
+
+.tag-label {
+  display: inline-block;
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.tag-checkbox:checked + .tag-name-post {
+  background-color:#8c2d19;
+  color:#f5e8da;
+  border-color:#672113;
+}
+
+.tag-name-post {
+  padding: 5px 15px;
+  background-color: #f8f9fa;
+  border-radius: 20px;
+  border: 2px solid #ccc;
+  transition: all 0.3s ease;
+}
+
+.tag-label:hover .tag-name-post {
+  border-color:#8c2d19;
+}
+
+.tag-checkbox:checked + .tag-name-post:hover {
+  background-color:#672113;
+  border-color:#672113;
+}
+
+
+
+.filters-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); 
+  display: none; 
+  z-index: 1050; 
+}
+
+.filters-menu {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #ffffff;
+  width: 90%; 
+  max-width: 1000px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 20px;
+}
+
+
+.d-flex {
+  display: flex;
+  align-items: top;
+  gap: 15px; /* Adds space between elements */
+}
+
+
+.text-danger {
+  color: #dc3545;
+}
+
+.text-center {
+  text-align: center;
+}
+
+
+#search-input {
+  border: 2px solid #8c2d19;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+#search-input:focus {
+  border-color: #672113;
+  box-shadow: 0 0 5px #672113;
+}
+
+#filter-select {
+  background-color: #ffffff;
+  border: 2px solid #8c2d19;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 16px;
+  color: #333;
+  outline: none;
+}
+
+
+/* Forgot Password Link */
+.forgot-password {
+  display: inline-block;
+  margin-top: 10px;
+  text-decoration: none;
+  color: #007bff;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.forgot-password:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}

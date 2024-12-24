@@ -1,0 +1,1591 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0'
+  title: 'LBAW InFEUP Web API'
+  description: 'Web Resources Specification (A7) for InFEUP'
+
+servers:
+  - url: http://lbaw.fe.up.pt
+    description: Production server
+
+externalDocs:
+  description: Find more info here.
+  url: https://web.fe.up.pt/~ssn/wiki/teach/lbaw/medialib/a07
+
+tags:
+  - name: 'M01: Authentication'
+  - name: 'M02: Posts'
+  - name: 'M03: User Pages'
+  - name: 'M04: Administrator'
+  - name: 'M05: Static Pages'
+  - name: 'M06: Comments'
+
+paths:
+
+#M01: Authentication
+  ##### Login #####
+  /auth/login:
+    get:
+      operationId: R101
+      summary: 'R101: Login Form'
+      description: 'Show login form interface. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Show log-in UI'
+    post:
+      operationId: R102
+      summary: 'R102: Login Action'
+      description: 'Processes the login attempt. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - email
+                - password
+      responses:
+        '302':
+          description: 'Redirect after login action.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful authentication. Redirect to user profile.'
+                  value: '/user/{id}'
+                302Error:
+                  description: 'Failed authentication. Redirect to login page.'
+                  value: '/auth/login'
+
+  ##### Lougout #####
+  /auth/logout:
+    post:
+      operationId: R103
+      summary: 'R103: Logout Action'
+      description: 'Logout from the current account. Access: USR' # , ADM -> why specify ADM here?
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '302':
+          description: 'Redirect after logout action.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful logout. Redirect to login page.'
+                  value: '/auth/login'
+                302Error:
+                  description: 'Successful logout. Redirect to login page.'
+                  value: '/user/{id}'
+
+  ##### Register #####
+  /auth/register:
+    get:
+      operationId: R104
+      summary: 'R104: Register Form'
+      description: 'Show new user registration form interface. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Show register UI'
+    post:
+      operationId: R105
+      summary: 'R105: Register Action'
+      description: 'Processes the new user registration attempt. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - email
+                - password
+      responses:
+        '302':
+          description: 'Redirect after processing registration.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Registration successful. Redirect to profile.'
+                  value: '/user/{id}'
+                302Failure:
+                  description: 'Registration failed. Redirect to register form.'
+                  value: '/auth/register'
+
+  ##### Recover password ######
+  # IDK IF THERE SHOULD BE A CODE VALIDATION TO MAKE SURE THE USER IS CORRECT
+  /recoverPassword:
+    get:
+      operationId: R106
+      summary: 'R106: Password recovery form'
+      description: 'Show password recovery form UI. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      responses:
+        '200':
+          description: 'Show Password recovery UI'
+        '404':
+          description: 'Password recovery page not found' ## IDK IF ITS NEEDED
+    post:
+      operationId: R107
+      summary: 'R107 : Password recovery action'
+      description: 'Changes the current password after receiving the validation code. Access: PUB'
+      tags:
+        - 'M01: Authentication'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                password:
+                  type: string
+                confirm_password:
+                  type: string
+              required:
+                - code
+                - password
+                - confirm_password
+      responses:
+        '302':
+          description: 'Redirect after processing password recovery.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Recovery successful. Redirect to main page.'
+                  value: '/posts' # goes to main post page with user logged in
+                302Failure:
+                  description: 'Recovery failed. Go back to recovery form.'
+                  value: '/recoverPassword'
+
+
+#M02: Posts
+  ##### View Post #####
+  /posts/{id}:
+    get:
+      operationId: R201
+      summary: 'R201: View Post'
+      description: 'Retrieve post details Interface. Access: USR'
+      tags:
+        - 'M02: Posts'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: 'Post ID'
+      responses:
+        '200':
+          description: 'Post details retrieved'
+        '404':
+          description: 'Post not found'
+
+  ##### Post Feed #####
+  /posts:
+    get:
+      operationId: R204
+      summary: 'R204: View News Feed with Filters'
+      description: 'Retrieve UI with posts with different filters such as date range, likes, etc. Access: PUB'
+      tags:
+        - 'M02: Posts'
+      parameters:
+        - name: tags
+          in: query
+          description: 'Comma-separated list of tags to filter posts'
+          required: false
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: 'Filter criteria for the news feed'
+          required: false
+          schema:
+            type: string
+            enum: ['today', 'top-all-time', 'top-this-week', 'top-this-month', 'last-30-days', 'last-7-days']
+        - name: limit
+          in: query
+          description: 'Limit the number of posts to retrieve'
+          required: false
+          schema:
+            type: integer
+    responses:
+      '200':
+        description: 'News Posts retrieved'
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: 'Unique identifier of the post'
+                  id_user:
+                    type: integer
+                    description: 'Unique identifier of the user who created the post'
+                  title:
+                    type: string
+                    description: 'Title of the post'
+                  subtitle:
+                    type: string
+                    description: 'Optional subtitle of the post'
+                  content:
+                    type: string
+                    description: 'Content of the post'
+                  date:
+                    type: string
+                    format: date-time
+                    description: 'Date the post was created'
+                  tags:
+                    type: array
+                    description: 'List of tags associated with the post'
+                    items:
+                      type: string
+              example:
+                - id: 1
+                  id_user: 2
+                  title: FEUP Christmas Java Workshop
+                  subtitle: Join the Holiday Coding Spirit!
+                  content: The Faculty of Engineering of the University of Porto (FEUP) is hosting a Christmas Java Workshop, bringing together tech enthusiasts and beginners eager to learn programming in a festive atmosphere. This one-day event will cover the basics of Java programming, including object-oriented concepts and hands-on exercises to build small holiday-themed projects. Participants will also enjoy seasonal treats like hot cocoa and cookies while networking with like-minded learners. The workshop is open to students and the general public, with no prior coding experience required. Spaces are limited, so make sure to register soon!...
+                  date: 2024-11-18 18:44:23
+                  tags: [LEIC,Events]
+      '404':
+        description: 'Posts not found'
+
+  ##### Add New Post #####
+  /posts/create:
+    get:
+      operationId: R205
+      summary: 'R205: Get Post Creation Form'
+      description: 'Retrieve the forms to create a new post. Access: USR'
+      tags:
+        - 'M02: Posts'
+      responses:
+        '200':
+          description: 'Show post creation UI'
+        '401':
+          description: 'Authentication required'
+        '404':
+          description: 'Post creation page not found'
+    post:
+      operationId: R206
+      summary: 'R206: Create a New Post'
+      description: 'Submit data to create a new post. Requires title, content, and at least one tag. Access: USR'
+      tags:
+        - 'M02: Posts'
+      requestBody:
+        description: 'Data for creating a new post'
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 'Title of the post'
+                subtitle:
+                  type: string
+                  description: 'Subtitle of the post'
+                content:
+                  type: string
+                  description: 'Content of the post'
+                tags:
+                  type: array
+                  description: 'List of tags associated with the post'
+                  items:
+                    type: string
+              required:
+                - title
+                - content
+                - tags
+      responses:
+        '302':
+          description: 'Redirect after creating post.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful post creation. Redirect to post details page.'
+                  value: '/posts/{id}'
+                302Error:
+                  description: 'Failed post creation. Stay in post creation page.'
+                  value: '/posts/create'
+        '400':
+          description: 'Validation error, missing or invalid fields'
+        '401':
+          description: 'Authentication required'
+
+  ##### Edit a Post #####
+  /posts/{id}/edit:
+    get:
+      operationId: R207
+      summary: 'R207: Get Post Edition Form'
+      description: 'Retrieve the forms to edit a post. Access: AUTH'
+      tags:
+        - 'M02: Posts'
+      responses:
+        '200':
+          description: 'Show post edition UI'
+        '401':
+          description: 'Only the post Author can edit the post'
+        '404':
+          description: 'Post edition page not found'
+    put:
+      operationId: R208
+      summary: 'R208: Edit a Post'
+      description: 'Submit data to edit a post. Access: AUTH'
+      tags:
+        - 'M02: Posts'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: "The unique identifier of the post to be edited."
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: "The updated title of the post."
+                content:
+                  type: string
+                  description: "The updated content of the post."
+              required:
+                - title
+                - content
+      responses:
+        '302':
+          description: 'Redirect after editing post.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successful post edit. Redirect to post details page.'
+                  value: '/posts/{id}'
+                302Error:
+                  description: 'Failed post edit. Stay in post edit page.'
+                  value: '/posts/{id}/edit'
+        '400':
+          description: 'Validation error, missing or invalid fields'
+        '401':
+          description: 'Only the post Author can edit the post'
+
+  ##### Remove a Post #####
+  /posts/{id}/delete:
+    delete:
+      operationId: R209
+      summary: 'R209: Remove a Post'
+      description: 'Delete an existing post by its ID. Access: USR'
+      tags:
+        - 'M02: Posts'
+      parameters:
+        - name: id
+          in: query
+          required: true
+          description: 'The unique identifier of the post to be deleted.'
+          schema:
+            type: string
+      responses:
+        '302':
+            description: 'Redirect after editing post.'
+            headers:
+              Location:
+                schema:
+                  type: string
+                examples:
+                  302Success:
+                    description: 'Successful post removal. Redirect to users posts page.'
+                    value: '/user/{id}/posts'
+                  302Error:
+                    description: 'Failed post removal. Stay in post details page.'
+                    value: '/posts/{id}'
+        '400':
+          description: 'Invalid or missing ID.'
+        '401':
+          description: 'Only the Author can remove a post.'
+        '404':
+          description: 'Post not found.'
+
+  ##### Toggle Like or Dislike Post #####
+  /posts/{id}/reaction:
+    put:
+      operationId: R210
+      summary: 'R210: Toggle "Like" or "Dislike"'
+      description: 'Allow a user to like or dislike a post. Clicking again will remove the like or dislike. Access: USR'
+      tags:
+        - 'M02: Posts'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: 'The unique identifier of the post to toggle like or dislike.'
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: ['like', 'dislike']
+          required: true
+          description: 'Action to perform on the post. "like" to toggle the like state, "dislike" to toggle the dislike state.'
+      responses:
+        '200':
+          description: 'Post like or dislike toggled successfully. The post now reflects the new state (liked or disliked).'
+        '400':
+          description: 'Invalid action or missing parameters.'
+        '401':
+          description: 'Authentication required.'
+        '404':
+          description: 'Post not found.'
+
+  ##### Remove Like or Dislike Post #####
+  /posts/{id}/remove-reaction:
+    put:
+      operationId: R211
+      summary: 'R211: Remove "Like" or "Dislike"'
+      description: 'Allow a user to remove their like or dislike from a post. Access: USR'
+      tags:
+        - 'M02: Posts'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: 'The unique identifier of the post to remove the like or dislike from.'
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: ['like', 'dislike']
+          required: true
+          description: 'Action to remove from the post. "like" to remove the like, "dislike" to remove the dislike.'
+      responses:
+        '200':
+          description: 'Post like or dislike removed successfully.'
+        '400':
+          description: 'Invalid action or missing parameters.'
+        '401':
+          description: 'Authentication required.'
+        '404':
+          description: 'Post not found.'
+
+  ##### Search Posts #####
+  /posts/search:
+    get:
+      operationId: R212
+      summary: 'R212: Search Posts'
+      description: 'Search for posts based on keywords, tags, and other filters. Access: PUB or AUTH depending on the system rules.'
+      tags:
+        - 'M02: Posts'
+      parameters:
+        - name: query
+          in: query
+          description: 'Search term to look for in post title, subtitle, or content.'
+          required: true
+          schema:
+            type: string
+        - name: tags
+          in: query
+          description: 'Comma-separated list of tags to filter posts by.'
+          required: false
+          schema:
+            type: string
+        - name: filter
+          in: query
+          description: 'Filter criteria such as date range or popularity.'
+          required: false
+          schema:
+            type: string
+            enum: ['today', 'top-all-time', 'top-this-week', 'top-this-month', 'last-30-days', 'last-7-days']
+        - name: limit
+          in: query
+          description: 'Limit the number of posts to retrieve.'
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: 'Pagination offset for retrieving results (e.g., for paging through large result sets).'
+          required: false
+          schema:
+            type: integer
+        - name: exact_match
+          in: query
+          description: 'If true, search for exact matches in title, subtitle, or content.'
+          required: false
+          schema:
+            type: boolean
+          default: false
+      responses:
+        '200':
+          description: 'Search results successfully retrieved.'
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: 'Unique identifier of the post'
+                    id_user:
+                      type: integer
+                      description: 'Unique identifier of the user who created the post'
+                    title:
+                      type: string
+                      description: 'Title of the post'
+                    subtitle:
+                      type: string
+                      description: 'Optional subtitle of the post'
+                    content:
+                      type: string
+                      description: 'Content of the post'
+                    date:
+                      type: string
+                      format: date-time
+                      description: 'Date the post was created'
+                    tags:
+                      type: array
+                      description: 'List of tags associated with the post'
+                      items:
+                        type: string
+          example:
+            - id: 1
+              id_user: 2
+              title: "User's Post 1"
+              subtitle: "Subtitle of post"
+              content: "Content of the user's post."
+              date: 2024-11-18T12:30:00
+              tags: [Tag1, Tag2]
+        '404':
+          description: 'No posts found matching the search criteria.'
+        '400':
+          description: 'Invalid search parameters or malformed request.'
+
+
+#M03: User Pages
+  ##### Show user profile #####
+  /user/{id}:
+    get:
+      operationId: R301
+      summary: 'R301: View User Profile'
+      description: 'Show user profile page UI. Access: USR, ADM, AUTH'
+      tags:
+        - 'M03: User Pages'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: 'User ID'
+      responses:
+        '200':
+          description: 'Ok. Show the view user profile'
+        '404':
+          description: 'User not found'
+        '401':
+          description: 'Unauthorized access, user must be logged in to view profile pages'
+     
+  ##### Edit user profile #####
+  /user/{id}/edit:
+    get:
+      operationId: R302
+      summary: 'R302: Edit User Profile page'
+      description: 'Show edit page of user UI. Access: USR'
+      tags:
+        - 'M03: User Pages'
+      responses:
+        '200':
+          description: 'Ok. Show edit user profile'
+        '401':
+          description: 'The profile can only be edited by its user.'
+        '404':
+          description: 'User not found'
+    put:
+      operationId: R303
+      summary: 'R303: Edit user profile action'
+      description: 'Process and update changes in the user profile. Access: USR'
+      tags:
+        - 'M03: User Pages'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                confirm_password:
+                  type: string
+              required:
+                  - none
+      responses:
+        '302':
+          description: 'Redirect after processing updates.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Update successful. Redirect to profile.'
+                  value: '/user/{id}'
+                302Failure:
+                  description: 'Update failed. Go back to edit form.'
+                  value: '/user/{id}/edit'
+
+  ##### Delete user  #####
+  /user/{id}/delete:
+    delete:
+      operationId: R303
+      summary: 'R303: Deletes an user.'
+      description: 'Deletes user and all user info. Access: ADM, USR'
+      tags:
+        - 'M03: User Pages'
+        - 'M04: Administrator'
+      requestBody:
+          required: true
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                required:
+                  - id
+      responses:
+        '404':
+          description: 'User not found.'
+        '302':
+          description: 'Redirect after processing deletion.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302SuccessAUTH:
+                  description: 'User deleted. Redirect to register.'
+                  value: '/auth/register'
+                302SuccessADM:
+                  description: 'User deleted. Redirect to admin panel.'
+                  value: '/admin/{id}' #back to the admins panel page
+                302Failure:
+                  description: 'Deletion failed. Go back to user profile page.'
+                  value: '/user/{id}'  # back the the users profile
+          
+  ##### Follow user  #####
+  /user/{id}/follow:
+    post:
+      operationId: R304
+      summary: 'R304: Follow an user.'
+      description: 'Follow an user. Access: USR'
+      tags:
+        - 'M03: User Pages'
+      requestBody:
+          required: true
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                required:
+                  - id
+      responses:
+        '404':
+          description: 'User not found.'
+        '302':
+          description: 'Redirect after processing follow.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'User followed. Redirect to user profile page.'
+                  value: '/user/{id}' # go back to the profile page of the user YOU followed
+                302Failure:
+                  description: 'Follow failed. Go back to user profile page.'
+                  value: '/user/{id}' # go back to the profile page of the user YOU followed
+
+  ##### Unfollow user  #####
+  /user/{id}/unfollow:
+    post:
+      operationId: R305
+      summary: 'R305: Unfollow an user.'
+      description: 'Unfollow an user. Access: USR'
+      tags:
+        - 'M03: User Pages'
+      requestBody:
+          required: true
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                required:
+                  - id
+      responses:
+        '404':
+          description: 'User not found.'
+        '302':
+          description: 'Redirect after processing unfollow.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'User unfollowed. Redirect to user profile page.'
+                  value: '/user/{id}' # go back to the profile page of the user YOU UNfollowed
+                302Failure:
+                  description: 'Unfollow failed. Go back to user profile page.'
+                  value: '/user/{id}' # go back to the profile page of the user YOU attempted to UNfollowed
+
+  ##### Block user  #####
+  /user/{id}/block:
+    post:
+      operationId: R306
+      summary: 'R306: Block an user.'
+      description: 'Block an user. Access: USR'
+      tags:
+        - 'M03: User Pages'
+      requestBody:
+          required: true
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                required:
+                  - id
+      responses:
+        '404':
+          description: 'User not found.'
+        '302':
+          description: 'Redirect after processing block.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'User blocked. Redirect to user profile page.'
+                  value: '/user/{id}' # go back to the profile page of the user YOU blocked
+                302Failure:
+                  description: 'Block failed. Go back to user profile page.'
+                  value: '/user/{id}' # go back to the profile page of the user YOU attempted to block
+
+  ##### Unblock user  #####
+  /user/{id}/unblock:
+    post:
+      operationId: R307
+      summary: 'R307: Unblock an user.'
+      description: 'Unblock an user. Access: USR'
+      tags:
+        - 'M03: User Pages'
+      requestBody:
+          required: true
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                required:
+                  - id
+      responses:
+        '404':
+          description: 'User not found.'
+        '302':
+          description: 'Redirect after processing unblock.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'User unblocked. Redirect to user profile page.'
+                  value: '/user/{id}' # go back to the profile page of the user YOU unblocked
+                302Failure:
+                  description: 'Unblock failed. Go back to user profile page.'
+                  value: '/user/{id}' # go back to the profile page of the user YOU attempted to unblock
+
+  ##### User notifications #####
+  /user/{id}/notifications:
+    get:
+      operationId: R308
+      summary: 'R308: View Notifications'
+      description: 'Show user notification page UI. Access: USR'
+      tags:
+        - 'M03: User Pages'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: 'User ID'
+      responses:
+        '200':
+          description: 'Ok. Show the notifications page'
+        '404':
+          description: 'User not found'
+        '401':
+          description: 'Unauthorized access, user must be logged in to view profile pages'
+
+  ##### View User's Posts #####
+  /user/{id}/posts:
+    get:
+      operationId: R309
+      summary: 'R309: View Posts by User'
+      description: 'Retrieve all posts created by a specific user. If the user does not exist, return an error. Access: PUB or AUTH (depending on system rules)'
+      tags:
+        - 'M03: User Pages'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: 'The unique identifier of the user whose posts are being viewed.'
+      responses:
+        '200':
+          description: 'User posts retrieved successfully.'
+          content:
+            application/x-www-form-urlencoded:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: 'Unique identifier of the post'
+                    id_user:
+                      type: integer
+                      description: 'Unique identifier of the user who created the post'
+                    title:
+                      type: string
+                      description: 'Title of the post'
+                    subtitle:
+                      type: string
+                      description: 'Optional subtitle of the post'
+                    content:
+                      type: string
+                      description: 'Content of the post'
+                    date:
+                      type: string
+                      format: date-time
+                      description: 'Date the post was created'
+                    tags:
+                      type: array
+                      description: 'List of tags associated with the post'
+                      items:
+                        type: string
+          example:
+            - id: 1
+              id_user: 2
+              title: "User's Post 1"
+              subtitle: "Subtitle of post"
+              content: "Content of the user's post."
+              date: 2024-11-18T12:30:00
+              tags: [Tag1, Tag2]
+        '404':
+          description: 'User not found. No posts to retrieve.'
+
+
+## M04: Admin Pages
+  ##### Ban User #####
+  /admin/user:
+    post:
+      operationId: R401
+      summary: 'R401: Ban User'
+      description: 'Ban a user temporarily or permanently. Access: ADM'
+      tags:
+        - 'M04: Administrator'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                banType:
+                  type: string
+                  enum: [temporary, permanent]
+              required:
+                - userId
+                - banType
+      responses:
+        '200':
+          description: 'User banned successfully'
+        '404':
+          description: 'User not found'
+
+  ##### Promote User to Admin #####
+  /user/{id}/promote:
+    put: #making a change to the user’s data
+      operationId: R401
+      summary: 'R401: Promote a user to admin'
+      description: 'Allows an admin to promote a user to an administrator. Access: ADM'
+      tags:
+        - 'M04: Administrator'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: 'User ID to promote'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                admin:
+                  type: boolean
+                  description: 'Flag indicating the user is promoted to admin'
+                  default: true
+              required:
+                - admin
+      responses:
+        '200':
+          description: 'User successfully promoted to admin.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successfully promoted to admin. Redirect to the admin panel.'
+                  value: '/admin/{id}' # Redirect back to the admin panel after promotion
+        '403':
+          description: 'Unauthorized action, only admins can promote users.'
+        '404':
+          description: 'User not found.'
+
+  ##### Demoting Admin to User #####
+  /user/{id}/demote:
+    put:
+      operationId: R402
+      summary: 'R402: Demote an admin to a regular user'
+      description: 'Allows an admin to demote another admin to a regular user. Access: ADM'
+      tags:
+        - 'M04: Administrator'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: 'Admin user ID to demote'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                admin:
+                  type: boolean
+                  description: 'Flag indicating the user is demoted to a regular user'
+                  default: false
+              required:
+                - admin
+      responses:
+        '200':
+          description: 'User successfully demoted to regular user.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successfully demoted to regular user. Redirect to admin panel.'
+                  value: '/admin/{id}' # Redirect back to the admin panel after demotion
+        '403':
+          description: 'Unauthorized action, only admins can demote other admins.'
+        '404':
+          description: 'User not found.'
+        '409':
+          description: 'Cannot demote the only admin user.'
+
+  ##### Create Tag #####
+  /admin/tags/create:
+    post:
+      operationId: R403
+      summary: 'R403: Create a new tag'
+      description: 'Allows an administrator to create a new tag for posts. Access: ADM'
+      tags:
+        - 'M04: Administrator'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'The name of the new tag'
+                  example: 'Tech'
+                description:
+                  type: string
+                  description: 'A description of the tag'
+                  example: 'Tag for technology-related posts'
+              required:
+                - name
+      responses:
+        '201':
+          description: 'Tag successfully created.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Redirect to admin panel or tag list after creating tag.'
+                  value: '/admin/tags'
+        '403':
+          description: 'Unauthorized action, only admins can create tags.'
+        '400':
+          description: 'Bad request, invalid input data.'
+
+  ##### Delete Tags #####
+  /admin/tags/delete/{tagId}:
+    delete: 
+      operationId: R404
+      summary: 'R404: Delete an existing tag'
+      description: 'Allows an administrator to delete a tag from the system. Access: ADM'
+      tags:
+        - 'M04: Administrator'
+      parameters:
+        - in: path
+          name: tagId
+          schema:
+            type: integer
+          required: true
+          description: 'Tag ID to delete'
+      responses:
+        '200':
+          description: 'Tag successfully deleted.'
+        '403':
+          description: 'Unauthorized action, only admins can delete tags.'
+        '404':
+          description: 'Tag not found, unable to delete.'
+        '400':
+          description: 'Bad request, invalid tag ID.'
+
+  ##### Admin-Only Account Creation ######
+  /admin/register:
+    get:
+      operationId: R405
+      summary: 'R405: Admin Register Form'
+      description: 'Show the admin registration form to create a new user account. Access: ADM'
+      tags:
+        - 'M04: Administrator'
+      responses:
+        '200':
+          description: 'Show admin registration UI for creating a new user.'
+    post:
+      operationId: R405
+      summary: 'R405: Admin Register Action'
+      description: 'Processes the new user registration attempt by an administrator. Access: ADM'
+      tags:
+        - 'M04: Administrator'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  description: 'Role of the new user (e.g., user or admin).'
+                  example: 'user'
+              required:
+                - username
+                - email
+                - password
+      responses:
+        '201':
+          description: 'Successfully created new user account.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Registration successful. Redirect to user profile.'
+                  value: '/user/{id}'
+        '403':
+          description: 'Forbidden. Only administrators can create new accounts.'
+        '400':
+          description: 'Bad request, invalid input data (e.g., missing required fields).'
+
+
+#M05: Static Pages
+  ##### About Us #####
+  /static/about-us:
+    get:
+      operationId: R501
+      summary: 'R501: About Us Page'
+      description: 'Displays information about the organization or website. Access: PUB'
+      tags:
+        - 'M05: Static Pages'
+      responses:
+        '200':
+          description: 'About Us page content retrieved'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    description: 'The title of the About Us page'
+                  content:
+                    type: string
+                    description: 'Content displayed on the About Us page'
+              example:
+                title: 'About Us'
+                content: 'We are a company dedicated to creating innovative solutions. Our mission is to make the world a better place through technology and creativity. Founded in 2024, we have been at the forefront of change and aim to continue building impactful products.'
+
+  ##### Main Features #####
+  /static/main-features:
+    get:
+      operationId: R502
+      summary: 'R502: Main Features Page'
+      description: 'Displays the main features of the product or service. Access: PUB'
+      tags:
+        - 'M05: Static Pages'
+      responses:
+        '200':
+          description: 'Main Features page content retrieved'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    description: 'The title of the Main Features page'
+                  features:
+                    type: array
+                    description: 'List of main features'
+                    items:
+                      type: string
+              example:
+                title: 'Main Features'
+                features:
+                  - 'Real-time notifications for user activities.'
+                  - 'User-friendly interface with customizable settings.'
+                  - 'Advanced search functionality for efficient content discovery.'
+                  - 'Comprehensive analytics and reports for data-driven decisions.'
+
+  ##### Contacts #####
+  /static/contacts:
+    get:
+      operationId: R503
+      summary: 'R503: Contacts Page'
+      description: 'Displays contact information for the company or service. Access: PUB'
+      tags:
+        - 'M05: Static Pages'
+      responses:
+        '200':
+          description: 'Contacts page content retrieved'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    description: 'The title of the Contacts page'
+                  contact_info:
+                    type: object
+                    properties:
+                      phone:
+                        type: string
+                        description: 'Phone number to reach the company or support'
+                      email:
+                        type: string
+                        description: 'Email address to contact for inquiries or support'
+                      address:
+                        type: string
+                        description: 'Physical address of the company or service'
+              example:
+                title: 'Contact Us'
+                contact_info:
+                  phone: '+1234567890'
+                  email: 'support@example.com'
+                  address: '123 Tech Avenue, Innovation City, Techland'
+
+
+#M06: Comments
+  ##### View a Comment #####
+  /comments/{commentId}:
+    get:
+      operationId: R601 #or 210
+      summary: 'R601: View a specific comment'
+      description: 'Retrieve details of a comment. Access: PUB/USR'
+      tags:
+        - 'M06: Comments'
+      parameters:
+        - in: path
+          name: commentId
+          schema:
+            type: integer
+          required: true
+          description: 'Unique identifier of the comment to be viewed.'
+      responses:
+        '200':
+          description: 'Comment details retrieved.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: 'Unique identifier of the comment.'
+                  postId:
+                    type: integer
+                    description: 'ID of the post the comment belongs to.'
+                  userId:
+                    type: integer
+                    description: 'ID of the user who created the comment.'
+                  content:
+                    type: string
+                    description: 'Text content of the comment.'
+                  date:
+                    type: string
+                    format: date-time
+                    description: 'Timestamp when the comment was created.'
+        '404':
+          description: 'Comment not found.'
+        '302':
+          description: 'Redirect to the comment details page.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successfully viewing the comment.'
+                  value: '/comments/{commentId}'
+
+  ##### Create a New Comment #####
+  /posts/{postId}/comments:
+    get:
+      operationId: R602
+      summary: 'R602: Get Comment Creation Form'
+      description: 'Retrieve the forms to create a new comment. Access: USR'
+      tags:
+        - 'M06: Comments'
+      responses:
+        '200':
+          description: 'Show comment creation UI'
+        '401':
+          description: 'Authentication required'
+        '404':
+          description: 'Comment creation page not found'
+    post:
+      operationId: R603
+      summary: 'R603: Create a new comment on a post'
+      description: 'Create a new comment on a specific post. Access: USR'
+      tags:
+        - 'M06: Comments'
+      parameters:
+        - in: path
+          name: postId #included as a path parameter to associate the comment with a specific post.
+          schema:
+            type: integer
+          required: true
+          description: 'The unique identifier of the post to which the comment belongs.'
+      requestBody:
+        description: 'The content of the comment being created.'
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: 'Text content of the comment.'
+              required:
+                - content
+      responses:
+        '201':
+          description: 'Comment successfully created.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: 'Unique identifier of the newly created comment.'
+                  postId:
+                    type: integer
+                    description: 'ID of the post the comment belongs to.'
+                  userId:
+                    type: integer
+                    description: 'ID of the user who created the comment.'
+                  content:
+                    type: string
+                    description: 'Content of the comment.'
+                  date:
+                    type: string
+                    format: date-time
+                    description: 'Timestamp when the comment was created.'
+        '400':
+          description: 'Invalid comment content or missing parameters.'
+        '401':
+          description: 'Authentication required to post a comment.'
+        '404':
+          description: 'Post not found (if the specified postId doesn’t exist).'
+        '422':
+          description: 'Unprocessable Entity. The comment content is empty or invalid.'
+
+  ##### Edit a Comment #####
+  /comments/{commentId}/edit:
+    get:
+      operationId: R604
+      summary: 'R604: Get Comment Edition Form'
+      description: 'Retrieve the forms to edit a comment. Access: AUTH'
+      tags:
+        - 'M06: Comments'
+      responses:
+        '200':
+          description: 'Show comment edition UI'
+        '401':
+          description: 'Only the comment Author can edit the comment'
+        '404':
+          description: 'Comment edition page not found'
+    put:
+      operationId: R605
+      summary: 'R605: Edit a specific comment'
+      description: 'Update the content of a comment. Access: AUTH (Only comment author can edit.)'
+      tags:
+        - 'M06: Comments'
+      parameters:
+        - in: path
+          name: commentId
+          schema:
+            type: integer
+          required: true
+          description: 'Unique identifier of the comment to be edited.'
+      requestBody:
+        description: 'Updated content of the comment.'
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: 'Updated content for the comment.'
+              required:
+                - content
+      responses:
+        '200':
+          description: 'Comment successfully updated.'
+        '302':
+          description: 'Redirect after editing the comment.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successfully edited comment. Redirect to comment details.'
+                  value: '/comments/{commentId}'
+                302Error:
+                  description: 'Failed to edit comment. Stay on the edit page.'
+                  value: '/comments/{commentId}/edit'
+        '400':
+          description: 'Invalid or missing comment content.'
+        '401':
+          description: 'Authentication required. Only the comment author can edit the comment.'
+        '404':
+          description: 'Comment not found.'
+
+  ##### Delete a Comment #####
+  /comments/{commentId}/delete:
+    delete:
+      operationId: R606
+      summary: 'R606: Delete a specific comment'
+      description: 'Remove a comment. Access: AUTH (Only comment author can delete.)'
+      tags:
+        - 'M06: Comments'
+      parameters:
+        - in: path
+          name: commentId
+          schema:
+            type: integer
+          required: true
+          description: 'Unique identifier of the comment to be deleted.'
+      responses:
+        '200':
+          description: 'Comment successfully deleted.'
+        '302':
+          description: 'Redirect after deleting the comment.'
+          headers:
+            Location:
+              schema:
+                type: string
+              examples:
+                302Success:
+                  description: 'Successfully deleted comment. Redirect to the post page.'
+                  value: '/posts/{postId}'
+                302Error:
+                  description: 'Failed to delete comment. Stay on the comment page.'
+                  value: '/comments/{commentId}'
+        '401':
+          description: 'Authentication required. Only the comment author can delete the comment.'
+        '404':
+          description: 'Comment not found.'
+
+  ##### Toggle Like or Dislike Comment #####
+  /comments/{id}/reaction:
+    put:
+      operationId: R607
+      summary: 'R607: Toggle "Like" or "Dislike" on a Comment'
+      description: 'Allow a user to like or dislike a comment. Clicking again will remove the like or dislike. Access: USR'
+      tags:
+        - 'M06: Comments'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: 'The unique identifier of the comment to toggle like or dislike.'
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: ['like', 'dislike']
+          required: true
+          description: 'Action to perform on the comment. "like" to toggle the like state, "dislike" to toggle the dislike state.'
+      responses:
+        '200':
+          description: 'Comment like or dislike toggled successfully. The comment now reflects the new state (liked or disliked).'
+        '400':
+          description: 'Invalid action or missing parameters.'
+        '401':
+          description: 'Authentication required.'
+        '404':
+          description: 'Comment not found.'
+
+  ##### Remove Like or Dislike Comment #####
+  /comments/{id}/remove-reaction:
+    put:
+      operationId: R608
+      summary: 'R608: Remove "Like" or "Dislike" from a Comment'
+      description: 'Allow a user to remove their like or dislike from a comment. Access: USR'
+      tags:
+        - 'M06: Comments'
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: 'The unique identifier of the comment to remove the like or dislike from.'
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: ['like', 'dislike']
+          required: true
+          description: 'Action to remove from the comment. "like" to remove the like, "dislike" to remove the dislike.'
+      responses:
+        '200':
+          description: 'Comment like or dislike removed successfully.'
+        '400':
+          description: 'Invalid action or missing parameters.'
+        '401':
+          description: 'Authentication required.'
+        '404':
+          description: 'Comment not found.'
+
